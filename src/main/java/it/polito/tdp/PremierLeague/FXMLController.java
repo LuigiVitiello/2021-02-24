@@ -10,6 +10,7 @@ import java.util.ResourceBundle;
 
 import it.polito.tdp.PremierLeague.model.Match;
 import it.polito.tdp.PremierLeague.model.Model;
+import it.polito.tdp.PremierLeague.model.Risultato;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -47,17 +48,54 @@ public class FXMLController {
 
     @FXML
     void doCreaGrafo(ActionEvent event) {
+    	this.txtResult.clear();
+    	Match m = this.cmbMatch.getValue();
+    	if(m == null) {
+    		this.txtResult.appendText("Seleziona un match");
+    		return ;
+    	}
     	
+    	this.model.creaGrafo(m);
+    	
+    	this.txtResult.appendText("GRAFO CREATO\n");
+    	this.txtResult.appendText("#Vertici: "+this.model.nVertici());
+    	this.txtResult.appendText("#Archi: "+this.model.nArchi());
     }
 
     @FXML
     void doGiocatoreMigliore(ActionEvent event) {    	
+    	this.txtResult.clear();
     	
+    	if(this.model.getGrafo()==null) {//controlliamo che il grafo sia stato creato
+    		this.txtResult.appendText("Crea prima il grafo");
+    		return ;
+    	}
+    	
+    	this.txtResult.appendText("GIOCATORE MIGLIORE:\n" + this.model.getMigliore());
     }
     
     @FXML
     void doSimula(ActionEvent event) {
-
+    	this.txtResult.clear();
+    	if(this.model.getGrafo()==null) {//controlliamo che il grafo sia stato creato
+    		this.txtResult.appendText("Crea prima il grafo");
+    		return ;
+    	}
+    	Match m = this.cmbMatch.getValue();
+    	if(m == null) {
+    		this.txtResult.appendText("Seleziona un match");
+    		return ;
+    	}
+    	int N=0;
+    	try {
+    		N = Integer.parseInt(this.txtN.getText());
+    	} catch(NumberFormatException ne) {
+    		ne.printStackTrace();
+    	}
+    	
+    	Risultato r = this.model.simulaPartita(m, N);
+    	this.txtResult.setText(this.model.getTeam(m.getTeamHomeID()).getName()+" "+r.getGoalCasa()+" - "+ r.getGoalTrasf()+" "+this.model.getTeam(m.getTeamAwayID()).getName()+"\n");
+    	this.txtResult.appendText("Con rispettivamente: "+r.getEspulsiCasa()+" e "+r.getEspulsiTrasf()+" espulsi");
     }
 
     @FXML // This method is called by the FXMLLoader when initialization is complete
@@ -73,5 +111,6 @@ public class FXMLController {
     
     public void setModel(Model model) {
     	this.model = model;
+    	this.cmbMatch.getItems().addAll(this.model.getAllMatches());
     }
 }
